@@ -1,0 +1,8 @@
+{
+	"module":"regal",
+	"about":"Regal Modules",
+	"author":"Anthony Diamond",
+	"version":"0.0.0",
+	"support":"",
+	"depends":["libc","std"]
+}
