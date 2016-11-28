@@ -1,58 +1,41 @@
 Namespace regal.util.stringutil
 
 #Import "ascii"
-'#Import "symbols"
+#Import "symbols"
+#Import "observe"
 
 ' Imports:
 Using regal.util.byteorder
 
 ' Functions:
 Function InQuotes:String(Input:String)
-	Return "~q" + Input + "~q"
+	Return symbols.Quote + Input + symbols.Quote
 End
 
 Function InSingleQuotes:String(Input:String)
-	Return "'" + Input + "'"
+	Return symbols.SingleQuote + Input + symbols.SingleQuote
 End
 
 Function YesNo:String(Value:Bool)
 	Return ((Value) ? "Yes" Else "No")
 End
 
-Function BitFieldAsString:String(BitField:ULong)
-	Return StringFromChars(BitFieldToChars(BitField, New Int[64]))
+Function BitFieldAsString<T>:String(BitField:T)
+	Local buffer:= New Byte[SizeOf_InBits<T>()]
+	
+	BitFieldToChars<T, Byte>(BitField, buffer)
+	
+	Return StringFromChars(buffer)
 End
 
-Function BitFieldAsString:String(BitField:ULong, Character:String, Character_Offset:Int=0)
-	Return BitFieldAsString(BitField, Character[Character_Offset])
-End
-
-Function BitFieldAsString:String(BitField:ULong, SeparatorChar:Int)
-	Return StringFromChars(BitFieldToChars(BitField, New Int[63], SeparatorChar))
-End
-
-Function BitFieldToChars:Int[](BitField:ULong, Chars:Int[])
-	For Local I:= 63 To 0 Step -1
-		Chars[I] = (BitField & 1) + ASCII_NUMBERS_POSITION
+Function BitFieldToChars<T, CharType>:Void(BitField:T, Chars:CharType[])
+	For Local I:= (Chars.Length - 1) To 0 Step -1
+		Chars[I] = (ASCII_NUMBERS_POSITION + (BitField & 1))
 		
 		BitField = (BitField Shr 1)
 	Next
 	
-	Return Chars
-End
-
-Function BitFieldToChars:Int[](BitField:ULong, Chars:Int[], SeparatorChar:Int)
-	For Local I:= 63 To 0 Step -2
-		Chars[I-1] = (BitField & 1) + ASCII_NUMBERS_POSITION
-		
-		If (I < 63) Then
-			Chars[I] = SeparatorChar
-		Endif
-		
-		BitField = (BitField Shr 1)
-	Next
-	
-	Return Chars
+	Return
 End
 
 #Rem
@@ -133,6 +116,47 @@ Function ToUpper:Int(CharacterCode:Int)
 	Return CharacterCode
 End
 
+Function ShortenedFloat:String(F:Double, Precision:Int=1)
+	' This is done so we don't divide by zero.
+	Precision = Max(Precision, 1)
+	
+	Local X:= Pow(10.0, Double(Precision))
+	
+	F *= X
+	
+	Return String(Floor(F + (Sgn(F) * 0.5)) / X)
+End
+
+Function SmartClip:String(Input:String, Symbol:Int)
+	Return SmartClip(Input, Symbol, Input.Length)
+End
+
+Function SmartClip:String(Input:String, Symbol:Int, Length:Int)
+	' Local variable(s):
+	Local FinalChar:= (Length - 1)
+	
+	Local XClip:Int
+	Local YClip:Int
+	
+	If (Input[0] = Symbol) Then
+		XClip = 1
+	Else
+		XClip = 0
+	Endif
+	
+	If (Input[FinalChar] = Symbol) Then
+		YClip = FinalChar
+	Else
+		YClip = Length
+	Endif
+	
+	If (XClip <> 0 Or YClip <> 0) Then
+		Return Input.Slice(XClip, YClip)
+	Endif
+	
+	Return Input
+End
+
 Function HexLE:String(Value:Int)
 	Return HexBE(HToNI(Value))
 End
@@ -158,5 +182,11 @@ Function HexBE:String(Value:Int)
 End
 
 Function StringFromChars<T>:String(Characters:T[])
-	Return String.FromCString(Characters.Data, Characters.Length)
+	Local Output:String
+	
+	For Local Character:= Eachin Characters
+		Output += String.FromChar(Character)
+	Next
+	
+	Return Output
 End

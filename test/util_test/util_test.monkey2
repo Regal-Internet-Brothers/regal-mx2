@@ -1,5 +1,6 @@
 #Import "../../util/util"
 
+' Imports:
 Using regal.util.stringutil
 Using regal.util.byteorder
 Using regal.util.sizeof
@@ -90,4 +91,14 @@ Function StringUtilTests:Void()
 	Local a_an_word:= "apple"
 	
 	Print("Should I use 'a' or 'an' when describing " + InQuotes(a_an_word) + "? Survey says: " + InSingleQuotes(AOrAn(a_an_word)))
+	
+	Print("Generating string from characters: " + StringFromChars(New Int[](65, 66, 67)))
+	
+	Local bitfield:= 1023
+	
+	Print("Converting bitfield to string: " + BitFieldAsString<Short>(bitfield))
+	
+	Local short_float:= 10.456
+	
+	Print("Shortening " + InSingleQuotes(short_float) + " as " + ShortenedFloat(short_float, 2))
 End
