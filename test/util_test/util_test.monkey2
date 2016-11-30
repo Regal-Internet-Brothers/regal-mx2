@@ -66,6 +66,7 @@ End
 Function SizeOfTests:Void()
 	TestAnnounce("SIZE-OF TEST")
 	
+	Print("Type sizes:")
 	Print(SizeOf<Long>())
 	Print(SizeOf<Int>())
 	Print(SizeOf<Short>())
