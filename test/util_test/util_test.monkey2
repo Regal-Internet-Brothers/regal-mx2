@@ -93,8 +93,6 @@ Function StringUtilTests:Void()
 	
 	Print("Should I use 'a' or 'an' when describing " + InQuotes(a_an_word) + "? Survey says: " + InSingleQuotes(AOrAn(a_an_word)))
 	
-	Print("Generating string from characters: " + StringFromChars(New Int[](65, 66, 67)))
-	
 	Local bitfield:= 1023
 	
 	Print("Converting bitfield to string: " + BitFieldAsString<Short>(bitfield))

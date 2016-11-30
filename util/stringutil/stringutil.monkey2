@@ -21,11 +21,11 @@ Function YesNo:String(Value:Bool)
 End
 
 Function BitFieldAsString<T>:String(BitField:T)
-	Local buffer:= New Byte[SizeOf_InBits<T>()]
+	Local buffer:= New Int[SizeOf_InBits<T>()]
 	
-	BitFieldToChars<T, Byte>(BitField, buffer)
+	BitFieldToChars<T, Int>(BitField, buffer) ' Byte
 	
-	Return StringFromChars(buffer)
+	Return String.FromChars(buffer)
 End
 
 Function BitFieldToChars<T, CharType>:Void(BitField:T, Chars:CharType[])
@@ -164,7 +164,7 @@ End
 ' This command may be overhauled at a later date.
 Function HexBE:String(Value:Int)
 	' Local variable(s):
-	Local Buf:= New Byte[8]
+	Local Buf:= New Int[8] ' Byte[8]
 	
 	For Local k:= 7 To 0 Step -1
 		Local n:Int = (Value & 15) + ASCII_NUMBERS_POSITION
@@ -178,15 +178,5 @@ Function HexBE:String(Value:Int)
 		Value = (Value Shr 4)
 	Next
 	
-	Return StringFromChars(Buf)
-End
-
-Function StringFromChars<T>:String(Characters:T[])
-	Local Output:String
-	
-	For Local Character:= Eachin Characters
-		Output += String.FromChar(Character)
-	Next
-	
-	Return Output
+	Return String.FromChars(Buf)
 End
