@@ -1,9 +1,14 @@
 #Import "../../util/util"
+#Import "../../memory/memory"
 
 ' Imports:
 Using regal.util.stringutil
-Using regal.util.byteorder
-Using regal.util.sizeof
+Using regal.util.ioutil
+
+Using regal.memory.sizeof
+Using regal.memory.byteorder
+
+Using std.memory
 
 ' Functions:
 Function Main:Void()
@@ -11,6 +16,7 @@ Function Main:Void()
 	ByteOrderTests(32)
 	SizeOfTests()
 	StringUtilTests()
+	StreamUtilTests()
 	
 	FinishTesting()
 End
@@ -100,4 +106,31 @@ Function StringUtilTests:Void()
 	Local short_float:= 10.456
 	
 	Print("Shortening " + InSingleQuotes(short_float) + " as " + ShortenedFloat(short_float, 2))
+End
+
+' Stream utilities:
+Function StreamUtilTests:Void()
+	TestAnnounce("I/O-UTIL TEST")
+	
+	Local a:= New DataBuffer(SizeOf_Int)
+	Local b:= New DataBuffer(SizeOf_Int)
+	
+	Local aStream:= New DataStream(a)
+	Local bStream:= New DataStream(b)
+	
+	Local chain:= New ChainStream(New Stream[](aStream, bStream), False, True)
+	
+	Local a_value:= 123
+	Local b_value:= 456
+	
+	chain.WriteInt(a_value)
+	chain.WriteInt(b_value)
+	
+	Print("A: " + a.PeekInt(0) + " | " + a_value + " | End-Of-Stream: " + BoolToString(aStream.Eof))
+	Print("B: " + b.PeekInt(0) + " | " + b_value + " | End-Of-Stream: " + BoolToString(bStream.Eof))
+	
+	chain.Close()
+	
+	a.Discard()
+	b.Discard()
 End

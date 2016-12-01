@@ -1,4 +1,4 @@
-Namespace regal.util.sizeof
+Namespace regal.memory.sizeof
 
 ' Constant variable(s):
 Const SizeOf_Long:= SizeOf<Long>() ' 8

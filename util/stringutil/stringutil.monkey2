@@ -5,7 +5,7 @@ Namespace regal.util.stringutil
 #Import "observe"
 
 ' Imports:
-Using regal.util.byteorder
+Using regal.memory.byteorder
 
 ' Functions:
 Function InQuotes:String(Input:String)

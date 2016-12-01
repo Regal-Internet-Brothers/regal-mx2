@@ -1,4 +1,10 @@
-Namespace regal.util.byteorder
+Namespace regal.memory.byteorder
+
+#Import "<std>"
+
+' Imports:
+Using std.memory
+Using std.stream
 
 ' Functions:
 
@@ -19,6 +25,27 @@ End
 ' This specifies if this system is little-endian.
 Function LittleEndian:Bool()
 	Return (Not BigEndian())
+End
+
+Function IsBigEndian:Bool(order:ByteOrder)
+	Return (order = ByteOrder.BigEndian)
+End
+
+Function IsLittleEndian:Bool(order:ByteOrder)
+	Return (order = ByteOrder.LittleEndian)
+End
+
+Function IsBigEndian:Bool(stream:Stream)
+	Return IsBigEndian(stream.ByteOrder)
+End
+
+Function IsLittleEndian:Bool(stream:Stream)
+	Return IsLittleEndian(stream.ByteOrder)
+End
+
+' This return 'True' if 'order' is big-endian.
+Function BoolToByteOrder:ByteOrder(is_bigEndian:Bool)
+	Return ((is_bigEndian) ? ByteOrder.BigEndian Else ByteOrder.LittleEndian)
 End
 
 Function NToHI:UInt(value:UInt)

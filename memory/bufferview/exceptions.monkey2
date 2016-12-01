@@ -1,6 +1,6 @@
 Namespace regal.memory.bufferview
 
-Using regal.stringutil
+Using regal.util.stringutil
 
 Class InvalidViewOperation Extends Throwable Abstract ' InvalidBufferViewOperation
 	' Functions:

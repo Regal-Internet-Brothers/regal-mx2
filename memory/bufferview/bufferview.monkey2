@@ -3,9 +3,8 @@ Namespace regal.memory.bufferview
 #Import "exceptions"
 
 ' Imports:
-Using regal.sizeof
-Using regal.memory
-'Using regal.byteorder
+Using regal.memory.sizeof
+'Using regal.memory.byteorder
 
 Using std.memory
 
