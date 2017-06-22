@@ -1,5 +1,7 @@
-#Import "../../util/util"
-#Import "../../memory/memory"
+'#Import "../../util/util"
+'#Import "../../memory/memory"
+
+#Import "../../regal"
 
 ' Imports:
 Using regal.util.stringutil
@@ -106,6 +108,34 @@ Function StringUtilTests:Void()
 	Local short_float:= 10.456
 	
 	Print("Shortening " + InSingleQuotes(short_float) + " as " + ShortenedFloat(short_float, 2))
+	
+	Local print_strings:= Lambda(strs:String[])
+		'Local out:= New PublicDataStream(1024)
+		
+		'Print(out.ReadString())
+		
+		Local out:String = strs[0]
+		
+		For Local index:= 1 Until strs.Length
+			out += (symbols.Comma + symbols.Space + strs[index])
+		Next
+		
+		Print(out)
+	End
+	
+	Local alphabet:= New String[26] ' English
+	
+	Local char_offset:= ASCII_CHARACTER_LOWERCASE_POSITION
+	
+	Local chr:= char_offset
+	
+	For Local index:= 0 Until alphabet.Length
+		alphabet[index] = String.FromChar(ToUpper(chr))
+		
+		chr += 1
+	Next
+	
+	print_strings(alphabet)
 End
 
 ' Stream utilities:
@@ -115,22 +145,55 @@ Function StreamUtilTests:Void()
 	Local a:= New DataBuffer(SizeOf_Int)
 	Local b:= New DataBuffer(SizeOf_Int)
 	
-	Local aStream:= New DataStream(a)
-	Local bStream:= New DataStream(b)
-	
-	Local chain:= New ChainStream(New Stream[](aStream, bStream), False, True)
-	
 	Local a_value:= 123
 	Local b_value:= 456
 	
-	chain.WriteInt(a_value)
-	chain.WriteInt(b_value)
+	Local rw_test:= Lambda()
+		Local aStream:= New DataStream(a)
+		Local bStream:= New DataStream(b)
+		
+		Local chain:= New ChainStream(New Stream[](aStream, bStream), False, True)
+		
+		chain.WriteInt(a_value)
+		chain.WriteInt(b_value)
+		
+		SeekBegin(aStream)
+		SeekBegin(bStream)
+		
+		Local new_a_value:= aStream.ReadInt()
+		Local new_b_value:= bStream.ReadInt()
+		
+		Print("A: " + new_a_value + " | " + a_value + " | Same-Value: " + YesNo(a_value = new_a_value) + " | End-Of-Stream: " + BoolToString(aStream.Eof))
+		Print("B: " + new_b_value + " | " + b_value + " | Same-Value: " + YesNo(b_value = new_b_value) + " | End-Of-Stream: " + BoolToString(bStream.Eof))
+		
+		chain.Close()
+	End
 	
-	Print("A: " + a.PeekInt(0) + " | " + a_value + " | End-Of-Stream: " + BoolToString(aStream.Eof))
-	Print("B: " + b.PeekInt(0) + " | " + b_value + " | End-Of-Stream: " + BoolToString(bStream.Eof))
+	Local mask_test:= Lambda()
+		Local a_mask:= 22345
+		
+		Local aStream:= New DataStream(a, 0, 3)
+		
+		MaskStream(aStream, a_mask, a.Length)
+		
+		Local masked_a:= (a_value ~ a_mask)
+		
+		Local new_masked_a:= a.PeekInt(0)
+		
+		Print("Is " + a_value + " equal to " + masked_a + " now? " + YesNo(new_masked_a = masked_a))
+		
+		DebugStop()
+		
+		Return
+	End
 	
-	chain.Close()
+	rw_test()
+	mask_test()
 	
 	a.Discard()
 	b.Discard()
+	
+	DebugStop()
+	
+	Return
 End
