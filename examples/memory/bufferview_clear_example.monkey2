@@ -4,43 +4,43 @@ Using regal.memory.bufferview
 
 ' Functions:
 Function Main:Void()
-	Local Buffer:= New ShortArrayView(512)
+	Local buffer:= New ShortArrayView(512)
 	
-	Local Indices:= New UInt[](0, 1)
-	Local Values:= New Int[](1234, 5678)
-	Local ItemCount:= Values.Length ' 2
+	Local indices:= New UInt[](0, 1)
+	Local values:= New Int[](1234, 5678)
+	Local itemCount:= values.Length ' 2
 	
 	Print("Storing the following values at the indices posted:")
 	
-	For Local I:= 0 Until ItemCount
-		Print("[" + Indices[I] + "]: " + Values[I])
+	For Local i:= 0 Until itemCount
+		Print("[" + indices[i] + "]: " + values[i])
 		
-		Buffer.Set(Indices[I], Values[I])
+		buffer.Set(indices[i], values[i])
 	Next
 	
 	Print("Retrieving values:")
 	
-	RetrieveValues(Buffer, 0, ItemCount)
+	RetrieveValues(buffer, 0, itemCount)
 	
 	Print("Clearing the first entry of the buffer...")
 	
-	Buffer.Clear(0, 1)
+	buffer.Clear(0, 1)
 	
 	Print("Retrieving values again:")
 	
-	RetrieveValues(Buffer, 0, ItemCount)
+	RetrieveValues(buffer, 0, itemCount)
 	
 	Print("Clearing the entire buffer...")
 	
-	Buffer.Clear()
+	buffer.Clear()
 	
 	Print("Retrieving values again (Should be zero-initialized):")
 	
-	RetrieveValues(Buffer, 0, ItemCount)
+	RetrieveValues(buffer, 0, itemCount)
 End
 
-Function RetrieveValues:Void(Buffer:ShortArrayView, Offset:Int, ItemCount:Int) ' Buffer:IntArrayView
-	For Local I:= Offset Until ItemCount
-		Print("[" + I + "]: " + Buffer.Get(I))
+Function RetrieveValues<ViewType>:Void(buffer:ViewType, offset:Int, itemCount:Int)
+	For Local i:= offset Until itemCount
+		Print("[" + i + "]: " + buffer.Get(i))
 	Next
 End
