@@ -192,10 +192,10 @@ Class ArrayView<ValueType> Implements ElementView Abstract ' BufferView
 	End
 	
 	Method GetArray:ValueType[](Index:UInt, Count:UInt, _ArrOff:UInt=0)
-		Local Output:ValueType[]
+		Local Output:= New ValueType[_ArrOff + Count]
 		
-		If (GetArray(Index, Output, Count, _ArrOff)) Then
-			Output = New ValueType[_ArrOff + Count]
+		If (Not GetArray(Index, Output, Count, _ArrOff)) Then
+			Return Null
 		Endif
 		
 		Return Output
