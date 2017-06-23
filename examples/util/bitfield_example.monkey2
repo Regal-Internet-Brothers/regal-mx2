@@ -1,4 +1,4 @@
-#Import "../../regal-core/util/bitfield"
+#Import "../regal"
 
 Using regal.util
 

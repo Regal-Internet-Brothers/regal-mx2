@@ -1,5 +1,7 @@
 Namespace regal.util
 
+'Using monkey.math
+
 ' Functions:
 Function FlagMask<T>:T(Bits:T)
 	Return (1 Shl Bits) ' Pow(2, BitNumber)

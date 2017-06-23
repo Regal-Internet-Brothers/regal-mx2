@@ -2,7 +2,6 @@ Namespace regal.memory.bufferview
 
 #Import "exceptions"
 
-' Imports:
 Using regal.memory.sizeof
 'Using regal.memory.byteorder
 
@@ -130,11 +129,11 @@ Class ArrayView<ValueType> Implements ElementView Abstract ' BufferView
 	' Methods (Public):
 	
 	' If overridden, these methods must respect the 'Offset' property:
-	Method Get:ValueType(Index:UInt)
+	Method Get:ValueType(Index:UInt) ' Virtual
 		Return GetRaw(Offset + IndexToAddress(Index))
 	End
 	
-	Method Set:Void(Index:UInt, Value:ValueType)
+	Method Set:Void(Index:UInt, Value:ValueType) ' Virtual
 		SetRaw(Offset + IndexToAddress(Index), Value)
 		
 		Return
@@ -459,7 +458,7 @@ Class ArrayView<ValueType> Implements ElementView Abstract ' BufferView
 End
 
 ' This is an intermediate class which defines mathematical routines for both integral and floating-point types.
-Class MathArrayView<ValueType> Extends ArrayView<ValueType> Virtual ' Abstract
+Class MathArrayView<ValueType> Extends ArrayView<ValueType> ' Abstract
 	' Constructor(s):
 	Method New(ElementSize:UInt, ElementCount:UInt)
 		Super.New(ElementSize, ElementCount)
@@ -529,9 +528,9 @@ Class MathArrayView<ValueType> Extends ArrayView<ValueType> Virtual ' Abstract
 	End
 End
 
-Class IntArrayView Extends MathArrayView<Int> Virtual ' ArrayView<Long> ' Int ' LongArrayView
+Class IntArrayView Extends MathArrayView<Int> ' ArrayView<Long> ' Int ' LongArrayView
 	' Constant variable(s):
-	Const Type_Size:= SizeOf_Integer ' 4
+	Const Type_Size:= SizeOf<Int>() ' 4
 	
 	' Constructor(s) (Public):
 	Method New(Count:UInt)
@@ -563,25 +562,14 @@ Class IntArrayView Extends MathArrayView<Int> Virtual ' ArrayView<Long> ' Int ' 
 	
 	Public
 	
-	' Methods (Public):
-	Method GetUnsigned:Int(Index:UInt)
-		Return (Get(Index) & $FFFFFFFF)
-	End
-	
-	Method SetUnsigned:Void(Index:UInt, Value:Int)
-		Set(Index, (Value & $FFFFFFFF))
-		
-		Return
-	End
-	
 	' Methods (Protected):
 	Protected
 	
-	Method GetRaw_Unsafe:Int(Address:UInt) ' Final
+	Method GetRaw_Unsafe:Int(Address:UInt) Override
 		Return Data.PeekInt(Address)
 	End
 	
-	Method SetRaw_Unsafe:Void(Address:UInt, Value:Int) ' Final
+	Method SetRaw_Unsafe:Void(Address:UInt, Value:Int) Override
 		Data.PokeInt(Address, Value)
 		
 		Return
@@ -590,9 +578,9 @@ Class IntArrayView Extends MathArrayView<Int> Virtual ' ArrayView<Long> ' Int ' 
 	Public
 End
 
-Class ShortArrayView Extends IntArrayView Virtual ' ArrayView<Int> ' Short
+Class ShortArrayView Extends IntArrayView ' ArrayView<Int> ' Short
 	' Constant variable(s):
-	Const Type_Size:= SizeOf_Short
+	Const Type_Size:= SizeOf<Short>()
 	
 	' Constructor(s) (Public):
 	Method New(Count:UInt)
@@ -624,25 +612,14 @@ Class ShortArrayView Extends IntArrayView Virtual ' ArrayView<Int> ' Short
 	
 	Public
 	
-	' Methods (Public):
-	Method GetUnsigned:Int(Index:UInt) ' Short
-		Return (Get(Index) & $FFFF)
-	End
-	
-	Method SetUnsigned:Void(Index:UInt, Value:Int) ' Short
-		Set(Index, (Value & $FFFF))
-		
-		Return
-	End
-	
 	' Methods (Protected):
 	Protected
 	
-	Method GetRaw_Unsafe:Int(Address:UInt) ' Final ' Short
+	Method GetRaw_Unsafe:Int(Address:UInt) Override ' Final ' Short
 		Return Data.PeekShort(Address)
 	End
 	
-	Method SetRaw_Unsafe:Void(Address:UInt, Value:Int) ' Final ' Short
+	Method SetRaw_Unsafe:Void(Address:UInt, Value:Int) Override ' Final ' Short
 		Data.PokeShort(Address, Value)
 		
 		Return
@@ -651,9 +628,9 @@ Class ShortArrayView Extends IntArrayView Virtual ' ArrayView<Int> ' Short
 	Public
 End
 
-Class ByteArrayView Extends ShortArrayView Virtual ' ArrayView<Int> ' Byte
+Class ByteArrayView Extends ShortArrayView ' ArrayView<Int> ' Byte
 	' Constant variable(s):
-	Const Type_Size:= SizeOf_Byte
+	Const Type_Size:= SizeOf<Byte>() ' 1
 	
 	' Constructor(s):
 	Method New(Count:UInt)
@@ -671,15 +648,17 @@ Class ByteArrayView Extends ShortArrayView Virtual ' ArrayView<Int> ' Byte
 	' Methods (Public):
 	
 	' These two methods follow the integrity rules of 'Offset':
-	Method Get:Int(Address:UInt) ' Byte
-		Return GetRaw(Offset + Address)
-	End
-	
-	Method Set:Void(Address:UInt, Value:Int) ' Byte
-		SetRaw(Offset + Address, Value)
+	#Rem
+		Method Get:Int(Address:UInt) Override ' Byte
+			Return GetRaw(Offset + Address)
+		End
 		
-		Return
-	End
+		Method Set:Void(Address:UInt, Value:Int) Override ' Byte
+			SetRaw(Offset + Address, Value)
+			
+			Return
+		End
+	#End
 	
 	#Rem
 		Method IndexToAddress:UInt(Address:UInt) ' Index:UInt
@@ -691,24 +670,14 @@ Class ByteArrayView Extends ShortArrayView Virtual ' ArrayView<Int> ' Byte
 		End
 	#End
 	
-	Method GetUnsigned:Int(Address:UInt) ' Byte
-		Return (Get(Address) & $FF)
-	End
-	
-	Method SetUnsigned:Void(Index:UInt, Value:Int) ' Byte
-		Set(Index, (Value & $FF))
-		
-		Return
-	End
-	
 	' Methods (Protected):
 	Protected
 	
-	Method GetRaw_Unsafe:Int(Address:UInt) ' Final ' Byte
+	Method GetRaw_Unsafe:Int(Address:UInt) Override ' Final ' Byte
 		Return Data.PeekByte(Address)
 	End
 	
-	Method SetRaw_Unsafe:Void(Address:UInt, Value:Int) ' Final ' Byte
+	Method SetRaw_Unsafe:Void(Address:UInt, Value:Int) Override ' Final ' Byte
 		Data.PokeByte(Address, Value)
 		
 		Return
@@ -717,9 +686,9 @@ Class ByteArrayView Extends ShortArrayView Virtual ' ArrayView<Int> ' Byte
 	Public
 End
 
-Class FloatArrayView Extends MathArrayView<Float> Virtual ' DoubleArrayView
+Class FloatArrayView Extends MathArrayView<Float> ' DoubleArrayView
 	' Constant variable(s):
-	Const Type_Size:= SizeOf_Float ' 4 ' 8
+	Const Type_Size:= SizeOf<Float>() ' 4 ' 8
 	
 	' Constructor(s):
 	Method New(Count:UInt)
@@ -737,11 +706,11 @@ Class FloatArrayView Extends MathArrayView<Float> Virtual ' DoubleArrayView
 	' Methods (Protected):
 	Protected
 	
-	Method GetRaw_Unsafe:Float(Address:UInt) ' Final ' Double
+	Method GetRaw_Unsafe:Float(Address:UInt) Override ' Final ' Double
 		Return Data.PeekFloat(Address)
 	End
 	
-	Method SetRaw_Unsafe:Void(Address:UInt, Value:Float) ' Final ' Double
+	Method SetRaw_Unsafe:Void(Address:UInt, Value:Float) Override ' Final ' Double
 		Data.PokeFloat(Address, Value)
 		
 		Return

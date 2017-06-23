@@ -1,15 +1,15 @@
 Namespace regal.memory.sizeof
 
 ' Constant variable(s):
-Const SizeOf_Long:= SizeOf<Long>() ' 8
-Const SizeOf_Int:= SizeOf<Int>() ' 4
-Const SizeOf_Short:= SizeOf<Short>() ' 2
-Const SizeOf_Byte:= SizeOf<Byte>() ' 1
+Const SizeOf_Long:= 8 ' SizeOf<Long>() ' 8
+Const SizeOf_Int:= 4 ' SizeOf<Int>() ' 4
+Const SizeOf_Short:= 2 ' SizeOf<Short>() ' 2
+Const SizeOf_Byte:= 1 ' SizeOf<Byte>() ' 1
 
-Const SizeOf_Float:= SizeOf<Float>() ' 4
-Const SizeOf_Double:= SizeOf<Double>() ' 8
+Const SizeOf_Float:= 4 ' SizeOf<Float>() ' 4
+Const SizeOf_Double:= 8 ' SizeOf<Double>() ' 8
 
-Const SizeOf_SizeT:= SizeOf<libc.size_t>() ' libc.sizeof<libc.size_t>(0)
+'Const SizeOf_SizeT:= SizeOf<libc.size_t>() ' libc.sizeof<libc.size_t>(0)
 
 Const SizeOf_Integer:= SizeOf_Int
 Const SizeOf_FloatingPoint:= SizeOf_Float ' SizeOf_Double
