@@ -1,10 +1,10 @@
 Namespace regal.util.stringutil
 
+' Imports:
 #Import "ascii"
 #Import "symbols"
 #Import "observe"
 
-' Imports:
 Using regal.memory.byteorder
 
 ' Functions:

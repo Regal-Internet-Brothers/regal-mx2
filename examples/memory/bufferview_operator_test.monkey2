@@ -1,6 +1,7 @@
 #Import "../regal"
 
 Using regal.memory..
+Using regal.math..
 
 Function Main:Void()
 	Local fib_count:= 16
@@ -28,16 +29,4 @@ Function StoreFib<T>:Void(container:T, count:Int, container_offset:Int=0, fib_of
 	For Local i:= 0 Until count
 		container[container_offset + i] = Fib(fib_offset + i + 1)
 	Next
-End
-
-Function Fib<T>:T(x:T)
-	If (x = 0) Then
-		Return 0
-	Endif
-	
-	If (x = 1) Then
-		Return 1
-	Endif
-	
-	Return (Fib(x - 1) + Fib(x - 2))
 End
