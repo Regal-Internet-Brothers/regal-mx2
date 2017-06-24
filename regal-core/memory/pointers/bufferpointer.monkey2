@@ -119,16 +119,34 @@ Struct BufferPointer
 			Return peek_pointer[0]
 		End
 		
-		Method CopyTo:Void(dst:MemoryPointer, srcOffset:Int, dstOffset:Int, count:Int)
+		Method CopyTo:Bool(dst:MemoryPointer, srcOffset:Int, dstOffset:Int, count:Int)
+			If (Not Exists Or dst = Null) Then
+				Return False
+			Endif
+			
 			DebugAssert((srcOffset >= 0) And ((srcOffset + count) <= length) And (dstOffset >= 0))
 			
 			libc.memmove(GetBytePointer(dst, dstOffset), GetBytePointer(srcOffset), count)
+			
+			Return True
 		End
 		
-		Method CopyTo:Void(dst:BufferPointer, srcOffset:Int, dstOffset:Int, count:Int)
+		Method CopyTo:Bool(dst:BufferPointer, srcOffset:Int, dstOffset:Int, count:Int)
 			DebugAssert((dstOffset + count) <= dst.length)
 			
-			CopyTo(dst.data, srcOffset, dstOffset, count)
+			Return CopyTo(dst.data, srcOffset, dstOffset, count)
+		End
+		
+		Method Clear:Bool(value:Int=0)
+			If (Not Exists) Then
+				Return False
+			Endif
+			
+			DebugAssert(length > 0 And data <> Null)
+			
+			libc.memset(data, value, length)
+			
+			Return True
 		End
 		
 		' Destructor(s):
@@ -164,6 +182,10 @@ Struct BufferPointer
 		
 		Property IsNull:Bool()
 			Return (Data = Null)
+		End
+		
+		Property Exists:Bool()
+			Return (Not IsNull And (Length > 0))
 		End
 		
 		Property Data:MemoryPointer()
