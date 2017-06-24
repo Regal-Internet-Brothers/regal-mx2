@@ -22,7 +22,7 @@ Function PixelToString:String(Pixel:UInt, Encoding:String="ARGB")
 End
 
 Function PrintPixel:Void(Pixel:UInt, Encoding:String="ARGB")
-	Print(ColorToString(Pixel, Encoding))
+	Print(PixelToString(Pixel, Encoding))
 	
 	Return
 End

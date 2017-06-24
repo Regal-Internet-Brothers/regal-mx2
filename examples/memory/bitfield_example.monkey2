@@ -1,6 +1,6 @@
 #Import "../regal"
 
-Using regal.util
+Using regal.memory.bitfield
 
 ' This demo inserts bits into a bitfield, then reads them back.
 Function Main:Void()

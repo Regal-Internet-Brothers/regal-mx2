@@ -1,10 +1,36 @@
-Namespace regal.util
+Namespace regal.memory.bitfield
 
 'Using monkey.math
 
 ' Functions:
+
+' This reverses the bit-order in the byte specified.
+' Example (Bits): 011 = 110
+Function ReverseByte:Long(b:Long)
+	b = (b & $FF)
+	
+	b = Lsr((b & $F0), 4) | Lsl((b & $0F), 4)
+	b = Lsr((b & $CC), 2) | Lsl((b & $33), 2)
+	b = Lsr((b & $AA), 1) | Lsl((b & $55), 1)
+	
+	Return b
+End
+
+' This returns the number of bytes needed to hold 'bits'.
+Function BitDepthInBytes:Int(bits:Int) ' UInt
+	Return ((bits + 7) / 8)
+End
+
 Function FlagMask<T>:T(Bits:T)
 	Return (1 Shl Bits) ' Pow(2, BitNumber)
+End
+
+Function Lsl:ULong(value:ULong, shift_amount:ULong)
+	Return (value Shl shift_amount)
+End
+
+Function Lsr:ULong(value:ULong, shift_amount:ULong)
+	Return (value Shr shift_amount)
 End
 
 Function ToggleBit<T>:T(BitField:T, BitNumber:T, Value:Bool)

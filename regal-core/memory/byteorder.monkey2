@@ -1,8 +1,5 @@
 Namespace regal.memory.byteorder
 
-#Import "<std>"
-
-' Imports:
 Using std.memory
 Using std.stream
 
