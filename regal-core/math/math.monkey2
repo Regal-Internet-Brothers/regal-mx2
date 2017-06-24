@@ -21,6 +21,20 @@ Function Fib<T>:T(x:T)
 	Return (Fib(x - 1) + Fib(x - 2))
 End
 
+Function RoundUp<T>:T(value:T, multiple:T)
+	If (multiple = 0) Then
+		Return value
+	Endif
+	
+	Local remainder:= (value Mod multiple)
+	
+	If (remainder = 0) Then
+		Return value
+	Endif
+	
+	Return (value + multiple - remainder)
+End
+
 Function FloatsEqual<T>:Bool(x:T, y:T, epsilon:T)
 	Return (Abs(x - y) <= epsilon)
 End
