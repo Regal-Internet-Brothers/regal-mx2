@@ -40,9 +40,11 @@ Function Main:Void()
 	
 	' Print the bytes and bits of our buffer:
 	Local split_stride:= 4
+	Local bit_count:= RoundUp(vindex, split_stride)
 	
-	Print(RepresentBytes(view.Data, Max((vindex / 8), 1)))
-	Print(RepresentBits(view, RoundUp(vindex, split_stride), split_stride, True))
+	Print("BYTES: " + RepresentBytes(view.Data, Max((vindex / 8), 1)))
+	Print("BITS: " + RepresentBits(view, bit_count, split_stride, True))
+	Print("RAW:  " + RepresentBits(view, bit_count, 0, False))
 	
 	' Discard our buffer.
 	buffer.Discard()
