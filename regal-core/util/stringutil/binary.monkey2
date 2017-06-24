@@ -1,6 +1,5 @@
 Namespace regal.util.stringutil
 
-Using regal.math..
 Using regal.memory..
 
 ' Functions:
@@ -59,22 +58,28 @@ Function RepresentBytes:String(buffer:BufferPointer, count:Int)
 	Return str
 End
 
-Function RepresentBits:String(view:ImageView, count:Int)
-	count = RoundUp(count, 4)
+Function RepresentBits:String(view:ImageView, count:Int, split_stride:Int=0, borders:Bool=False)
+	Local str:String
 	
-	Local str:String = "[" + view.Get(0)
+	If (borders) Then
+		str = "["
+	Endif
+	
+	str += view.Get(0)
 	
 	For Local i:= 1 Until count
-		If ((i Mod 8) = 0) Then
-			str += "]  ["
-		Elseif ((i Mod 4) = 0) Then
+		If (borders And ((i Mod 8) = 0)) Then
+			str += "] ["
+		Elseif (split_stride > 0 And ((i Mod split_stride) = 0)) Then
 			str += "|"
 		Endif
 	
 		str += String(view.Get(i))
 	Next
 	
-	str += "]"
+	If (borders) Then
+		str += "]"
+	Endif
 	
 	Return str
 End

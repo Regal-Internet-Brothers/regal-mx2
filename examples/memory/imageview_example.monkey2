@@ -1,6 +1,7 @@
 #Import "../regal"
 
 Using regal.memory..
+Using regal.math..
 Using regal.util.stringutil..
 
 Function Main:Void()
@@ -38,8 +39,10 @@ Function Main:Void()
 	add(0); add(1); add(0); add(0)
 	
 	' Print the bytes and bits of our buffer:
+	Local split_stride:= 4
+	
 	Print(RepresentBytes(view.Data, Max((vindex / 8), 1)))
-	Print(RepresentBits(view, vindex))
+	Print(RepresentBits(view, RoundUp(vindex, split_stride), split_stride, True))
 	
 	' Discard our buffer.
 	buffer.Discard()
