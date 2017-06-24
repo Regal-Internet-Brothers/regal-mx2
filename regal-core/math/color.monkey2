@@ -3,7 +3,7 @@ Namespace regal.math
 Using regal.memory.sizeof
 
 ' This command is a helper function for the inverse position of a byte inside of an integer.
-Function ProcessColorLocation:UInt(Point:Byte)
+Function ProcessColorLocation:UInt(Point:Int) ' UByte
 	Return (SizeOf_InBits<Int>() - (SizeOf_InBits<UByte>() * (Point + 1))) ' ((SizeOf_Integer_InBits-SizeOf_Octet_InBits)-(SizeOf_Octet_InBits*Point))
 End
 
@@ -20,3 +20,39 @@ Function PixelToString:String(Pixel:UInt, Encoding:String="ARGB")
 	' Return the encoded color-string:
 	Return ("R: " + R + ", G: " + G + ", B: " + B + ", A: " + A)
 End
+
+Function PrintPixel:Void(Pixel:UInt, Encoding:String="ARGB")
+	Print(ColorToString(Pixel, Encoding))
+	
+	Return
+End
+
+#Rem
+	Function WrapColor:Double(C:Double)
+		#Rem
+		While (C < 0.0)
+			C += 255.0
+		Wend
+		
+		While (C > 255.0)
+			C -= 255.0
+		Wend
+		#End
+		
+		Return (C Mod 255.1)
+	End
+	
+	Function WrapColor_S:Double(C:Double)
+		#Rem
+		While (C < 0.0)
+			C += 255.0
+		Wend
+		
+		While (C > 255.0)
+			C -= 255.0
+		Wend
+		#End
+		
+		Return SMod(C, 255.1)
+	End
+#End
