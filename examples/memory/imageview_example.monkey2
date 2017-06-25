@@ -22,7 +22,9 @@ Function Main:Void()
 	
 	' Local-only lambda, do not use outside of this scope.
 	Local add:= Lambda(value:Int)
-		view.Set(vindex_ptr[0], value); vindex_ptr[0] += 1
+		view[vindex_ptr[0]] = value
+		
+		vindex_ptr[0] += 1
 	End
 	
 	' Specify bits for our data-buffer:

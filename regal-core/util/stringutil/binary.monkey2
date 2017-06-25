@@ -1,6 +1,6 @@
 Namespace regal.util.stringutil
 
-Using regal.memory.imageview..
+'Using regal.memory.imageview..
 
 ' Functions:
 Function HexLE:String(Value:Int)
@@ -58,7 +58,7 @@ Function RepresentBytes:String(buffer:BufferPointer, count:Int)
 	Return str
 End
 
-Function RepresentBits:String(view:ImageView, count:Int, split_stride:Int=0, borders:Bool=False)
+Function RepresentBits<BitView>:String(view:BitView, count:Int, split_stride:Int=0, borders:Bool=False) ' ImageView
 	Local str:String
 	
 	If (borders) Then
@@ -74,7 +74,7 @@ Function RepresentBits:String(view:ImageView, count:Int, split_stride:Int=0, bor
 			str += "|"
 		Endif
 	
-		str += String(view.Get(i))
+		str += String(view[i])
 	Next
 	
 	If (borders) Then

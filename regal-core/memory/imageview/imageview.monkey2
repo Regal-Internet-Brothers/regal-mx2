@@ -34,6 +34,15 @@ Struct ImageView
 			BuildMetaCache()
 		End
 	Public
+		' Operators:
+		Operator []:Long(index:Int)
+			Return Get(index)
+		End
+		
+		Operator[]=(index:Int, value:Long)
+			Set(index, value)
+		End
+		
 		' Methods:
 		Method Get:Long(index:Int, big_endian:Bool=False)
 			Local address:= IndexToAddress(index)
