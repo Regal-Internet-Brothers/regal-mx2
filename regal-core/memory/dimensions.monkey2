@@ -102,11 +102,11 @@ Struct TwoDim<ContainerType, ValueType>
 		End
 		
 		Property Width:Int()
-			Return Size.x
+			Return size.x
 		End
 		
 		Property Height:Int()
-			Return Size.y
+			Return size.y
 		End
 	Protected
 		' Fields:
