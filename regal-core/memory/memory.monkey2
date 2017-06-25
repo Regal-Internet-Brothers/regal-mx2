@@ -7,6 +7,7 @@ Namespace regal.memory
 #Import "bufferview/bufferview"
 #Import "imageview/imageview"
 
+#Import "dimensions"
 #Import "byteorder"
 #Import "sizeof"
 #Import "bitfield"

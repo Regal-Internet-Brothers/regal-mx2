@@ -1,5 +1,7 @@
 Namespace regal.memory.imageview
 
+Using regal.memory.bitfield
+
 ' TODO: Implement proper 64-bit values.
 
 ' This maps a memory buffer to bit-length color entries based on the available channels and color-depth.

@@ -1,6 +1,6 @@
 Namespace regal.util.stringutil
 
-Using regal.memory..
+Using regal.memory.imageview..
 
 ' Functions:
 Function HexLE:String(Value:Int)
