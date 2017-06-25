@@ -9,6 +9,10 @@ Namespace regal.util.stringutil
 Using regal.memory.byteorder
 
 ' Functions:
+Function Chr:Int(Input:String)
+	Return Input[0]
+End
+
 Function InQuotes:String(Input:String)
 	Return symbols.Quote + Input + symbols.Quote
 End
