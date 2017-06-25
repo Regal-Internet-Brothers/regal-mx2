@@ -2,6 +2,7 @@ Namespace regal.math
 
 ' Imports:
 #Import "trig"
+#Import "deltatime"
 #Import "color"
 
 ' Functions:

@@ -92,5 +92,5 @@ Function ShortenedFloat:String(F:Double, Precision:Int=1)
 	
 	F *= X
 	
-	Return String(Floor(F + (Sgn(F) * 0.5)) / X)
+	Return String(Floor(F + (monkey.math.Sgn(F) * 0.5)) / X)
 End
