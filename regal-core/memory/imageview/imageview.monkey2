@@ -1,6 +1,7 @@
 Namespace regal.memory.imageview
 
 Using regal.memory.bitfield
+Using regal.memory.sizeof
 
 ' TODO: Implement proper 64-bit values.
 
@@ -299,6 +300,11 @@ Struct ImageView
 		' This returns a reference to the buffer this view is mapping into color data.
 		Property Data:BufferPointer()
 			Return Self.data
+		End
+		
+		' This specifies how many entries are representable by this view.
+		Property Length:Int()
+			Return (((Data.Length - Offset) * SizeOf_Byte_InBits) / Depth)
 		End
 		
 		' This specifies how many color channels are mapped in this view.
