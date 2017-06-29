@@ -9,49 +9,19 @@ Using regal.memory.pointers
 
 Using std.memory
 Using std.resource
+
 Using std.collections..
 
-' Constant variable(s) (Private):
-Private
+' Aliases:
+Alias IntArrayView:MathArrayView<Int>
+Alias ShortArrayView:MathArrayView<Short>
+Alias ByteArrayView:MathArrayView<Byte>
 
-Const MAX_VIEW_ELEMENTS:UInt = 0 ' -1
-
-Public
-
-' Interfaces:
-Interface BufferView
-	' Methods:
-	' Nothing so far.
-	
-	' Properties:
-	Property Data:BufferPointer()
-	Property Offset:UInt()
-End
-
-Interface ElementView Extends BufferView
-	' Methods:
-	
-	' This converts 'Index' into a "raw address";
-	' used for internal memory operations.
-	' For details, view the 'ArrayView.OffsetIndexToAddress' command.
-	Method IndexToRawAddress:UInt(Index:UInt)
-	
-	' Properties:
-	Property Data:BufferPointer()
-	
-	' This supplies the raw size of this view.
-	' For details, view the 'ArrayView.Size' property.
-	Property Size:UInt()
-	
-	' This specifies the size of each element in this view.
-	Property ElementSize:UInt()
-End
+Alias FloatArrayView:MathArrayView<Float>
+Alias DoubleArrayView:MathArrayView<Double>
 
 ' Classes:
-Class ArrayView<ValueType> Extends Resource Implements ElementView Abstract ' BufferView
-	' Constant variable(s) (Public):
-	' Nothing so far.
-	
+Class ArrayView<ValueType> Extends Resource Abstract
 	' Structures:
 	Struct Iterator ' Implements IIterator<ValueType> ' T
 		Private
@@ -74,17 +44,17 @@ Class ArrayView<ValueType> Extends Resource Implements ElementView Abstract ' Bu
 			Property AtEnd:Bool()
 				Return _index >= _view.Length
 			End
-	
+			
 			Property Current:ValueType()
 				AssertCurrent()
-	
+				
 				Return _view[_index]
 			Setter(current:ValueType)
 				AssertCurrent()
-	
+				
 				_view[_index] = current
 			End
-	
+			
 			' Methods:
 			Method Bump:Void()
 				AssertCurrent()
@@ -99,7 +69,7 @@ Class ArrayView<ValueType> Extends Resource Implements ElementView Abstract ' Bu
 	
 				_view[_index] = 0
 			End
-	
+			
 			Method Insert:Void(value:ValueType)
 				DebugAssert(_index <= _view.Length, "Invalid view iterator")
 	
@@ -112,78 +82,64 @@ Class ArrayView<ValueType> Extends Resource Implements ElementView Abstract ' Bu
 	
 	#Rem
 		NOTES:
-			* The 'ElementCount' argument(s) is/are bound by the amount of memory given to the view.
+			* The length of data-buffers are bound by the amount of memory given to the view.
 				This means the segment of a buffer that you intend to map must be at least the
 				length you specify, scaled according to the requested size for each element.
 				
 				An invalid size will result in an exception.
 	#End
 	
-	Method New(ElementSize:UInt, ElementCount:UInt)
-		Self.ElementSize = ElementSize
-		
-		InitializeCustomBuffer(ElementSize, ElementCount)
-	End
-	
-	Method New(ElementSize:UInt, Data:BufferPointer, OffsetInBytes:UInt=0, ElementCount:UInt=MAX_VIEW_ELEMENTS)
-		Self.Offset = OffsetInBytes
-		Self.ElementSize = ElementSize
-		
-		Self._Data = Data
-		
-		Self.Size = GetSize(Data, ElementSize, ElementCount)
-	End
-	
-	' The 'ExtraOffset' argument is used to offset from the 'View' object's offset.
-	Method New(ElementSize:UInt, View:BufferView, ElementCount:UInt=MAX_VIEW_ELEMENTS, ExtraOffset:UInt=0)
-		Self.ElementSize = ElementSize
-		
-		Self.Offset = (View.Offset + ExtraOffset)
-		
-		Self._Data = View.Data
-		
-		Self.Size = GetSize(Self.Data, ElementSize, ElementCount)
-	End
-	
-	' Constructor(s) (Protected):
-	Protected
-	
 	Method New(ElementCount:UInt)
-		Self.New(SizeOf<ValueType>(), ElementCount)
+		InitializeCustomBuffer(ElementCount)
 	End
 	
-	Public
+	Method New(DataPointer:BufferPointer)
+		' Make sure the intended size is correct.
+		If (DataPointer.Length < ElementSize) Then
+			' The intended size is too small.
+			Throw New InvalidViewMappingOperation(Self, DataPointer.Length)
+		Endif
+		
+		Self._Data = DataPointer
+		Self.Size = DataPointer.Length
+	End
+	
+	Method New(DataPointer:BufferPointer, OffsetInBytes:UInt)
+		Self.New(New BufferPointer(DataPointer.GetBytePointer(OffsetInBytes), (DataPointer.Length - OffsetInBytes), DataPointer.OwnsData))
+	End
+	
+	Method New(Data:DataBuffer, ElementCount:UInt, OffsetInBytes:UInt=0)
+		Local ElementAllocSize:= (ElementCount * ElementSize)
+		Local Buffer:= New BufferPointer(Data, ElementAllocSize, OffsetInBytes)
+		
+		Self._Data = Buffer
+		
+		' Make sure the intended size is correct.
+		If (ElementAllocSize < ElementSize Or ElementAllocSize > Data.Length) Then
+			' The intended size is either too large, or too small.
+			Throw New InvalidViewMappingOperation(Self, ElementAllocSize)
+		Endif
+		
+		Self.Size = ElementAllocSize
+	End
+	
+	Method New(Data:DataBuffer)
+		Self.New(Data, (Data.Length / ElementSize))
+	End
 	
 	' Constructor(s) (Private):
 	Private
 	
-	Method GetSize:UInt(Data:BufferPointer, ElementSize:UInt, ElementCount:UInt=MAX_VIEW_ELEMENTS)
-		If (ElementCount = MAX_VIEW_ELEMENTS) Then
-			Return Data.Length
-		Endif
-		
-		Local IntendedSize:= (ElementCount * ElementSize) ' CountInBytes(ElementCount)
-		
-		' Make sure the intended size is correct.
-		If (IntendedSize < ElementSize Or IntendedSize > Data.Length) Then
-			' The intended size is either too large, or too small.
-			Throw New InvalidViewMappingOperation(Self, Offset, IntendedSize)
-		Endif
-		
-		Return IntendedSize
-	End
-	
 	' NOTE: It is considered unsafe to call this constructor before assigning a value to the 'ElementSize' property.
-	Method InitializeCustomBuffer:Void(ElementSize:UInt, ElementCount:UInt) Final
+	Method InitializeCustomBuffer:Void(ElementCount:UInt)
 		If (ElementSize = 0 Or ElementCount = 0) Then
-			Throw New BulkAllocationException<BufferView>(Self, 0) ' IntendedSize
+			Throw New BulkAllocationException<Resource>(Self, 0) ' IntendedSize
 		Endif
 		
 		Local IntendedSize:= (ElementCount * ElementSize)
 		
 		Self._Data = New BufferPointer(IntendedSize) ' CountInBytes(ElementCount)
 		
-		Self.Offset = 0
 		Self.Size = Self.Data.Length
 	End
 	
@@ -203,41 +159,110 @@ Class ArrayView<ValueType> Extends Resource Implements ElementView Abstract ' Bu
 		Return New Iterator(Self, 0)
 	End
 	
-	' If overridden, these methods must respect the 'Offset' property:
-	Method Get:ValueType(Index:UInt) ' Virtual
-		Return GetRaw(Offset + IndexToAddress(Index))
+	Method Get:ValueType(Index:UInt)
+		Return GetRaw(IndexToAddress(Index))
 	End
 	
-	Method Set:Void(Index:UInt, Value:ValueType) ' Virtual
-		SetRaw(Offset + IndexToAddress(Index), Value)
+	Method Set:Void(Index:UInt, Value:ValueType)
+		SetRaw(IndexToAddress(Index), Value)
 		
 		Return
 	End
 	
-	' This performs a raw memory transfer/copy from this view to 'Output'.
-	' This means the output is not casted, but rather a mapped copy of the data.
-	Method Transfer:Bool(InputIndex:UInt, Output:ElementView, OutputIndex:Int, Count:UInt) ' ArrayView
-		Return ViewTransfer<ArrayView, ElementView>(Self, InputIndex, Output, OutputIndex, Count) ' ArrayView<ValueType>
+	#Rem
+		This performs a raw memory copy from one view to another.
+		This means the output is not casted, but rather a mapped copy of the data.
+		
+		Address translations are performed before copy-operations
+		take place, and are checked accordingly.
+		
+		The 'Count' argument specifies the number of elements to be copied from this view.
+		
+		If preliminary bounds checks fail, this command will return 'False'.
+	#End
+	
+	Method Transfer<ElementView>:Bool(InputIndex:UInt, Output:ElementView, OutputIndex:Int, Count:UInt) ' ArrayView
+		' Get the appropriate element size.
+		Local ElementSize:= Self.ElementSize ' Min(Self.ElementSize, Output.ElementSize)
+		Local BytesToTransfer:= (ElementSize * Count)
+		
+		' Calculate the end-points we'll be reaching:
+		Local InByteBounds:= Self.IndexToAddress(InputIndex + Count)
+		Local OutByteBounds:= Output.IndexToAddress(OutputIndex) + BytesToTransfer ' Output.IndexToAddress(OutputIndex + Count)
+		
+		' Make sure the end-points fit within our buffer segments:
+		If (InByteBounds > Self.Size Or OutByteBounds > Output.Size) Then
+			Return False
+		Endif
+		
+		' The starting raw address in the output buffer.
+		Local OutputAddress:= Output.IndexToAddress(OutputIndex)
+		
+		' The starting raw address in the input buffer.
+		Local InputAddress:= Self.IndexToAddress(InputIndex)
+		
+		' Perform a raw memory copy from 'Self.Data' to 'Output.Data'.
+		Self.Data.CopyTo(Output.Data, InputAddress, OutputAddress, BytesToTransfer)
+		
+		' Return the default response.
+		Return True
 	End
 	
 	' This performs an element-level transfer/copy from 'Input' to this view.
 	' This means that each element is casted from their source type/size to the destination type/size.
-	Method Copy:Bool(Index:UInt, Input:ArrayView, InputIndex:Int, Count:UInt) ' ArrayView<ValueType>
-		Return ViewCopy<ArrayView, ArrayView>(Input, InputIndex, Self, Index, Count) ' ArrayView<ValueType>
+	' If preliminary bounds checks fail, this command will return 'False'.
+	Method Copy<ElementView>:Bool(OutputIndex:UInt, Input:ElementView, InputIndex:Int, Count:UInt) ' ArrayView<ValueType>
+		' Calculate the appropriate element size.
+		Local InElementSize:= Input.ElementSize
+		Local OutElementSize:= Self.ElementSize
+		
+		' Calculate the end-points we'll be reaching:
+		Local InByteBounds:= Input.IndexToAddress(InputIndex + Count)
+		Local OutByteBounds:= Self.IndexToAddress(OutputIndex + Count)
+		
+		' Make sure the end-points fit within our buffer segments:
+		If (InByteBounds > Input.Size Or OutByteBounds > Self.Size) Then
+			Return False
+		Endif
+		
+		' The starting raw address in the output buffer.
+		Local OutputAddress:= Self.IndexToAddress(OutputIndex)
+		
+		' The starting raw address in the input buffer.
+		Local InputAddress:= Input.IndexToAddress(InputIndex)
+		
+		' Continue until we've reached our described bounds:
+		While (InputAddress < InByteBounds)
+			#Rem
+				If (OutputAddress >= OutByteBounds) Then
+					Exit
+				Endif
+			#End
+			
+			' Copy the value located at 'InputAddress' into the output at 'OutputAddress'.
+			Self.SetRaw_Unsafe(OutputAddress, Input.GetRaw_Unsafe(InputAddress))
+			
+			' Move forward by one entry on each address:
+			InputAddress += InElementSize
+			OutputAddress += OutElementSize
+		Wend
+		
+		' Return the default response.
+		Return True
 	End
 	
-	Method Copy:Bool(Index:UInt, Input:ArrayView, InputIndex:Int=0)
+	Method Copy<ElementView>:Bool(Index:UInt, Input:ElementView, InputIndex:Int=0)
 		Return Copy(Index, Input, InputIndex, Min(Self.Length, Input.Length))
 	End
 	
-	Method Copy:Bool(Input:ArrayView)
+	Method Copy<ElementView>:Bool(Input:ElementView)
 		Return Copy(0, Input, 0)
 	End
 	
 	' This returns 'False' if the bounds specified are considered invalid.
-	Method GetArray:Bool(Index:UInt, Output:ValueType[], Count:UInt, OutputOffset:UInt=0)
+	Method GetArray<ArrayType>:Bool(Index:UInt, Output:ArrayType, Count:UInt, OutputOffset:UInt=0)
 		' Calculate the end-point we'll be reaching.
-		Local ByteBounds:= OffsetIndexToAddress(Index+Count)
+		Local ByteBounds:= IndexToAddress(Index+Count)
 		
 		' Make sure the end-point fits within our buffer-segment.
 		If (ByteBounds > Size) Then
@@ -248,7 +273,7 @@ Class ArrayView<ValueType> Extends Resource Implements ElementView Abstract ' Bu
 		Local OutputPosition:= OutputOffset
 		
 		' The current raw address in the internal buffer.
-		Local Address:= OffsetIndexToAddress(Index)
+		Local Address:= IndexToAddress(Index)
 		
 		' Continue until we've reached our described bounds.
 		While (Address < ByteBounds)
@@ -281,9 +306,9 @@ Class ArrayView<ValueType> Extends Resource Implements ElementView Abstract ' Bu
 	End
 	
 	' This returns 'False' if the bounds specified are considered invalid.
-	Method SetArray:Bool(Index:UInt, Input:ValueType[], Count:UInt, InputOffset:UInt=0)
+	Method SetArray<ArrayType>:Bool(Index:UInt, Input:ArrayType, Count:UInt, InputOffset:UInt=0)
 		' Calculate the end-point we'll be reaching.
-		Local ByteBounds:= OffsetIndexToAddress(Index+Count)
+		Local ByteBounds:= IndexToAddress(Index+Count)
 		
 		' Make sure the end-point fits within our buffer-segment.
 		If (ByteBounds > Size) Then
@@ -294,7 +319,7 @@ Class ArrayView<ValueType> Extends Resource Implements ElementView Abstract ' Bu
 		Local InputPosition:= InputOffset
 		
 		' The current raw address in the internal buffer.
-		Local Address:= OffsetIndexToAddress(Index)
+		Local Address:= IndexToAddress(Index)
 		
 		' The amount 'Address' will move by on each iteration.
 		Local Stride:= ElementSize
@@ -315,27 +340,27 @@ Class ArrayView<ValueType> Extends Resource Implements ElementView Abstract ' Bu
 		Return True
 	End
 	
-	Method SetArray:Bool(Index:UInt, Input:ValueType[])
+	Method SetArray<ArrayType>:Bool(Index:UInt, Input:ArrayType)
 		Return SetArray(Index, Input, Input.Length)
 	End
 	
 	' TODO: Optimize this overload to bypass index conversion.
-	Method SetArray:Bool(Input:ValueType[])
+	Method SetArray<ArrayType>:Bool(Input:ArrayType)
 		Return SetArray(0, Input)
 	End
 	
 	' This returns 'False' if the bounds specified are considered invalid.
 	Method Clear:Bool(Index:UInt, Count:UInt, Value:ValueType)
 		' Calculate the end-point we'll be reaching.
-		Local ByteBounds:= OffsetIndexToAddress(Index+Count)
+		Local ByteBounds:= IndexToAddress(Index+Count)
 		
 		' Make sure the end-point fits within our buffer-segment.
-		If (ByteBounds > ViewBounds) Then
+		If (ByteBounds > Size) Then
 			Return False
 		Endif
 		
 		' The current raw address in the internal buffer.
-		Local Address:= OffsetIndexToAddress(Index)
+		Local Address:= IndexToAddress(Index)
 		
 		' The amount 'Address' will move by on each iteration.
 		Local Stride:= ElementSize
@@ -403,33 +428,6 @@ Class ArrayView<ValueType> Extends Resource Implements ElementView Abstract ' Bu
 		Return (Address / ElementSize)
 	End
 	
-	#Rem
-		The result of this method is a non-convertible raw address.
-		By definition, this address may not be used with commands like
-		'AddressToIndex', as the value would be skewed.
-		
-		To fix this address for such commands, subtract a stored result gathered
-		from the 'Offset' property at the time this method was called.
-		
-		Because the value of 'Offset' can be changed, you must always ensure that
-		the offset you apply to restore the appropriate value corresponds with the
-		original value associated with this object's 'Offset' property.
-		
-		This type of address manipulation is not recommended,
-		and should be avoided wherever possible.
-	#End
-	
-	Method OffsetIndexToAddress:UInt(Index:UInt) Final
-		Return (IndexToAddress(Index) + Offset)
-	End
-	
-	' This method is an extension, which should only be used when converting
-	' a value from a real address to a convertible address.
-	' This command is not recommended, and is subject to deletion.
-	Method __OffsetAddressToIndex:UInt(_Address:UInt) Final
-		Return AddressToIndex(_Address - Offset)
-	End
-	
 	' Methods (Protected):
 	Protected
 	
@@ -446,16 +444,10 @@ Class ArrayView<ValueType> Extends Resource Implements ElementView Abstract ' Bu
 	End
 	
 	' Implemented:
-	
-	' This method wraps 'OffsetIndexToAddress' for compatibility with the 'ElementView' interface.
-	Method IndexToRawAddress:UInt(Index:UInt) Final
-		Return OffsetIndexToAddress(Index)
-	End
-	
 	Method SetRaw:Void(Address:UInt, Value:ValueType) Final
 		Local ElementSize:= Self.ElementSize
 		
-		If ((Address + ElementSize) > ViewBounds) Then ' Address < 0
+		If ((Address + ElementSize) > Size) Then ' Address < 0
 			Throw New InvalidViewWriteOperation(Self, Address, ElementSize)
 		Endif
 		
@@ -467,7 +459,7 @@ Class ArrayView<ValueType> Extends Resource Implements ElementView Abstract ' Bu
 	Method GetRaw:ValueType(Address:UInt) Final
 		Local ElementSize:= Self.ElementSize
 		
-		If ((Address + ElementSize) > ViewBounds) Then ' Address < 0
+		If ((Address + ElementSize) > Size) Then ' Address < 0
 			Throw New InvalidViewReadOperation(Self, Address, ElementSize)
 		Endif
 		
@@ -492,33 +484,12 @@ Class ArrayView<ValueType> Extends Resource Implements ElementView Abstract ' Bu
 	End
 	
 	' This describes the address of the absolute furthest into the internal buffer this view reaches.
-	' This is mainly useful for raw bounds checks that already account for offsets.
+	' This is mainly useful for raw bounds checks.
 	' For a good example of this, view the 'GetArray' command's implementation(s).
-	Property ViewBounds:UInt()
-		Return (Size + Offset)
-	End
-	
-	' This returns the raw size of the internal buffer area (In bytes), without adjusting for offsets.
-	' This is useful when the literal size (In bytes) of this view is required.
 	Property Size:UInt()
 		Return Self._Size ' UInt(Data.Length)
 	Setter(Value:UInt)
 		Self._Size = Value
-	End
-	
-	' This specifies the size of an element.
-	Property ElementSize:UInt()
-		Return Self._ElementSize
-	Setter(Value:UInt)
-		Self._ElementSize = Value
-	End
-	
-	' This provides access to the internal buffer-offset.
-	' Note: This is already accounted for when calculating 'Size'.
-	Property Offset:UInt()
-		Return Self._Offset
-	Setter(Value:UInt)
-		Self._Offset = Value
 	End
 	
 	' This provides access to the internal buffer.
@@ -533,6 +504,11 @@ Class ArrayView<ValueType> Extends Resource Implements ElementView Abstract ' Bu
 			Self.Offset = 0
 			'Self.Size = GetSize(Self._Data, ElementSize, ElementCount)
 	#End
+	End
+	
+	' This specifies the size of an element.
+	Property ElementSize:UInt() ' Int
+		Return SizeOf<ValueType>()
 	End
 	
 	Property OwnsData:Bool()
@@ -553,27 +529,26 @@ End
 
 ' This is an intermediate class which defines mathematical routines for both integral and floating-point types.
 Class MathArrayView<ValueType> Extends ArrayView<ValueType> ' Abstract
-	' Constructor(s) (Public):
-	Method New(ElementSize:UInt, ElementCount:UInt)
-		Super.New(ElementSize, ElementCount)
-	End
-	
-	Method New(ElementSize:UInt, Data:BufferPointer, OffsetInBytes:UInt=0, ElementCount:UInt=MAX_VIEW_ELEMENTS)
-		Super.New(ElementSize, Data, OffsetInBytes, ElementCount)
-	End
-	
-	Method New(ElementSize:UInt, View:BufferView, ElementCount:UInt=MAX_VIEW_ELEMENTS, ExtraOffset:UInt=0)
-		Super.New(ElementSize, View, ElementCount, ExtraOffset)
-	End
-	
-	' Constructor(s) (Protected):
-	Protected
-	
+	' Constructor(s):
 	Method New(ElementCount:UInt)
 		Super.New(ElementCount)
 	End
 	
-	Public
+	Method New(Data:BufferPointer, OffsetInBytes:UInt=0)
+		Super.New(Data, OffsetInBytes)
+	End
+	
+	Method New(Data:BufferPointer)
+		Super.New(Data)
+	End
+	
+	Method New(Data:DataBuffer, ElementCount:UInt, OffsetInBytes:UInt=0)
+		Super.New(Data, ElementCount, OffsetInBytes)
+	End
+	
+	Method New(Data:DataBuffer)
+		Super.New(Data)
+	End
 	
 	' Methods:
 	
@@ -629,280 +604,4 @@ Class MathArrayView<ValueType> Extends ArrayView<ValueType> ' Abstract
 		
 		Return Result
 	End
-End
-
-Class IntArrayView Extends MathArrayView<Int> ' ArrayView<Long> ' Int ' LongArrayView
-	' Constant variable(s):
-	Const Type_Size:= SizeOf<Int>() ' 4
-	
-	' Constructor(s) (Public):
-	Method New(Count:UInt)
-		Super.New(Type_Size, Count)
-		'Super.New(Count)
-	End
-	
-	Method New(Data:BufferPointer, OffsetInBytes:UInt=0, ElementCount:UInt=MAX_VIEW_ELEMENTS)
-		Super.New(Type_Size, Data, OffsetInBytes, ElementCount)
-	End
-	
-	Method New(View:BufferView, ElementCount:UInt=MAX_VIEW_ELEMENTS, ExtraOffset:UInt=0)
-		Super.New(Type_Size, View, ElementCount, ExtraOffset)
-	End
-	
-	' Constructor(s) (Protected):
-	Protected
-	
-	Method New(Type_Size:UInt, ElementCount:UInt)
-		Super.New(Type_Size, ElementCount)
-	End
-	
-	Method New(Type_Size:UInt, Data:BufferPointer, OffsetInBytes:UInt=0, ElementCount:UInt=MAX_VIEW_ELEMENTS)
-		Super.New(Type_Size, Data, OffsetInBytes, ElementCount)
-	End
-	
-	Method New(Type_Size:UInt, View:BufferView, ElementCount:UInt=MAX_VIEW_ELEMENTS, ExtraOffset:UInt=0)
-		Super.New(Type_Size, View, ElementCount, ExtraOffset)
-	End
-	
-	Public
-	
-	' Methods (Protected):
-	Protected
-	
-	#Rem
-		Method GetRaw_Unsafe:Int(Address:UInt) Override
-			Return Data.Peek<Int>(Address)
-		End
-		
-		Method SetRaw_Unsafe:Void(Address:UInt, Value:Int) Override
-			Data.Poke<Int>(Address, Value)
-			
-			Return
-		End
-	#End
-	
-	Public
-End
-
-Class ShortArrayView Extends IntArrayView ' MathArrayView<Short>
-	' Constant variable(s):
-	Const Type_Size:= SizeOf<Short>()
-	
-	' Constructor(s) (Public):
-	Method New(Count:UInt)
-		Super.New(Type_Size, Count)
-	End
-	
-	Method New(Data:BufferPointer, OffsetInBytes:UInt=0, ElementCount:UInt=MAX_VIEW_ELEMENTS)
-		Super.New(Type_Size, Data, OffsetInBytes, ElementCount)
-	End
-	
-	Method New(View:BufferView, ElementCount:UInt=MAX_VIEW_ELEMENTS, ExtraOffset:UInt=0)
-		Super.New(Type_Size, View, ElementCount, ExtraOffset)
-	End
-	
-	' Constructor(s) (Protected):
-	Protected
-	
-	Method New(Type_Size:UInt, ElementCount:UInt)
-		Super.New(Type_Size, ElementCount)
-	End
-	
-	Method New(Type_Size:UInt, Data:BufferPointer, OffsetInBytes:UInt=0, ElementCount:UInt=MAX_VIEW_ELEMENTS)
-		Super.New(Type_Size, Data, OffsetInBytes, ElementCount)
-	End
-	
-	Method New(Type_Size:UInt, View:BufferView, ElementCount:UInt=MAX_VIEW_ELEMENTS, ExtraOffset:UInt=0)
-		Super.New(Type_Size, View, ElementCount, ExtraOffset)
-	End
-	
-	Public
-	
-	' Methods (Protected):
-	Protected
-	
-	Method GetRaw_Unsafe:Int(Address:UInt) Override ' Final ' Short
-		Return Data.Peek<Short>(Address)
-	End
-	
-	Method SetRaw_Unsafe:Void(Address:UInt, Value:Int) Override ' Final ' Short
-		Data.Poke<Short>(Address, Value)
-		
-		Return
-	End
-	
-	Public
-End
-
-Class ByteArrayView Extends ShortArrayView ' MathArrayView<Byte>
-	' Constant variable(s):
-	Const Type_Size:= SizeOf<Byte>() ' 1
-	
-	' Constructor(s):
-	Method New(Count:UInt)
-		Super.New(Type_Size, Count)
-	End
-	
-	Method New(Data:BufferPointer, OffsetInBytes:UInt=0, ElementCount:UInt=MAX_VIEW_ELEMENTS)
-		Super.New(Type_Size, Data, OffsetInBytes, ElementCount)
-	End
-	
-	Method New(View:BufferView, ElementCount:UInt=MAX_VIEW_ELEMENTS, ExtraOffset:UInt=0)
-		Super.New(Type_Size, View, ElementCount, ExtraOffset)
-	End
-	
-	' Methods (Public):
-	
-	' These two methods follow the integrity rules of 'Offset':
-	#Rem
-		Method Get:Int(Address:UInt) Override ' Byte
-			Return GetRaw(Offset + Address)
-		End
-		
-		Method Set:Void(Address:UInt, Value:Int) Override ' Byte
-			SetRaw(Offset + Address, Value)
-			
-			Return
-		End
-	#End
-	
-	#Rem
-		Method IndexToAddress:UInt(Address:UInt) ' Index:UInt
-			Return Address
-		End
-		
-		Method AddressToIndex:UInt(Address:UInt)
-			Return Address
-		End
-	#End
-	
-	' Methods (Protected):
-	Protected
-	
-	Method GetRaw_Unsafe:Int(Address:UInt) Override ' Final ' Byte
-		Return Data.Peek<Byte>(Address)
-	End
-	
-	Method SetRaw_Unsafe:Void(Address:UInt, Value:Int) Override ' Final ' Byte
-		Data.Poke<Byte>(Address, Value)
-		
-		Return
-	End
-	
-	Public
-End
-
-Class FloatArrayView Extends MathArrayView<Float> ' DoubleArrayView
-	' Constant variable(s):
-	Const Type_Size:= SizeOf<Float>() ' 4 ' 8
-	
-	' Constructor(s):
-	Method New(Count:UInt)
-		Super.New(Type_Size, Count)
-	End
-	
-	Method New(Data:BufferPointer, OffsetInBytes:UInt=0, ElementCount:UInt=MAX_VIEW_ELEMENTS)
-		Super.New(Type_Size, Data, OffsetInBytes, ElementCount)
-	End
-	
-	Method New(View:BufferView, ElementCount:UInt=MAX_VIEW_ELEMENTS, ExtraOffset:UInt=0)
-		Super.New(Type_Size, View, ElementCount, ExtraOffset)
-	End
-	
-	' Methods (Protected):
-	Protected
-	
-	Method GetRaw_Unsafe:Float(Address:UInt) Override ' Final ' Double
-		Return Data.Peek<Float>(Address)
-	End
-	
-	Method SetRaw_Unsafe:Void(Address:UInt, Value:Float) Override ' Final ' Double
-		Data.Poke<Float>(Address, Value)
-		
-		Return
-	End
-	
-	Public
-End
-
-' Functions:
-
-#Rem
-	This performs a raw memory copy from one view to another.
-	
-	Address translations are performed before copy-operations
-	take place, and are checked accordingly.
-	
-	The 'Count' argument specifies the number of elements to be copied from 'Input'.
-	
-	If preliminary bounds checks fail, this command will return 'False'.
-#End
-
-Function ViewTransfer<A, B>:Bool(Input:A, InputIndex:UInt, Output:B, OutputIndex:Int, Count:UInt) ' ArrayView ' ElementView
-	' Get the appropriate element size.
-	Local ElementSize:= Input.ElementSize ' Min(Input.ElementSize, Output.ElementSize)
-	Local BytesToTransfer:= (ElementSize * Count)
-	
-	' Calculate the end-points we'll be reaching:
-	Local InByteBounds:= Input.IndexToRawAddress(InputIndex + Count)
-	Local OutByteBounds:= Output.IndexToRawAddress(OutputIndex) + BytesToTransfer ' Output.IndexToRawAddress(OutputIndex + Count)
-	
-	' Make sure the end-points fit within our buffer segments:
-	If (InByteBounds > Input.Size Or OutByteBounds > Output.Size) Then
-		Return False
-	Endif
-	
-	' The starting raw address in the output buffer.
-	Local OutputAddress:= Output.IndexToRawAddress(OutputIndex)
-	
-	' The starting raw address in the input buffer.
-	Local InputAddress:= Input.IndexToRawAddress(InputIndex)
-	
-	' Perform a raw memory copy from 'Input.Data' to 'Output.Data'.
-	Input.Data.CopyTo(Output.Data, InputAddress, OutputAddress, BytesToTransfer)
-	
-	' Return the default response.
-	Return True
-End
-
-' This performs an element-level copy from one view to another.
-' If preliminary bounds checks fail, this command will return 'False'.
-Function ViewCopy<A, B>:Bool(Input:A, InputIndex:UInt, Output:B, OutputIndex:Int, Count:UInt) ' ArrayView ' ElementView
-	' Calculate the appropriate element size.
-	Local InElementSize:= Input.ElementSize
-	Local OutElementSize:= Output.ElementSize
-	
-	' Calculate the end-points we'll be reaching:
-	Local InByteBounds:= Input.IndexToRawAddress(InputIndex + Count)
-	Local OutByteBounds:= Output.IndexToRawAddress(OutputIndex + Count)
-	
-	' Make sure the end-points fit within our buffer segments:
-	If (InByteBounds > Input.Size Or OutByteBounds > Output.Size) Then
-		Return False
-	Endif
-	
-	' The starting raw address in the output buffer.
-	Local OutputAddress:= Output.IndexToRawAddress(OutputIndex)
-	
-	' The starting raw address in the input buffer.
-	Local InputAddress:= Input.IndexToRawAddress(InputIndex)
-	
-	' Continue until we've reached our described bounds:
-	While (InputAddress < InByteBounds)
-		#Rem
-			If (OutputAddress >= OutByteBounds) Then
-				Exit
-			Endif
-		#End
-		
-		' Copy the value located at 'InputAddress' into the output at 'OutputAddress'.
-		Output.SetRaw_Unsafe(OutputAddress, Input.GetRaw_Unsafe(InputAddress))
-		
-		' Move forward by one entry on each address:
-		InputAddress += InElementSize
-		OutputAddress += OutElementSize
-	Wend
-	
-	' Return the default response.
-	Return True
 End

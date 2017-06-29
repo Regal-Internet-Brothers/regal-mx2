@@ -24,14 +24,14 @@ Function Main:Void()
 	Local demoIndex:= (offsetIndex - 1)
 	
 	' Create a view of 16-bit integers starting 'OffsetIndex' 16-bit integers from the beginning of 'RawBuffer'. (Converted to bytes from indices)
-	Local offsetView:= New ShortArrayView(rawBuffer, baseView.IndexToAddress(offsetIndex), (count / 2)) ' (OffsetIndex * 2)
+	Local offsetView:= New ShortArrayView(rawBuffer, (count / 2), baseView.IndexToAddress(offsetIndex)) ' (OffsetIndex * 2)
 	
 	For Local i:= 0 Until count
 		baseView.Set(i, (i + 1)) ' 1, 2, 3, ...
 	Next
 	
 	Print("The length of 'BaseView' is: (" + baseView.Length + ") {Size: " + baseView.Size + "}")
-	Print("The length of 'OffsetView' is: (" + offsetView.Length + ") {Size: " + offsetView.Size + ", Offset: " + offsetView.Offset + "}")
+	Print("The length of 'OffsetView' is: (" + offsetView.Length + ") {Size: " + offsetView.Size + "}")
 	Print("")
 	
 	Print("Printing the contents of 'BaseView':")

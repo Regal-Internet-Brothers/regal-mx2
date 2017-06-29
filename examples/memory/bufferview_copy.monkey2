@@ -30,7 +30,7 @@ Function Main:Void()
 	ReportView(destination)
 End
 
-Function ReportView:Void(view:IntArrayView)
+Function ReportView<ViewType>:Void(view:ViewType)
 	For Local i:= 0 Until view.Length
 		Print("[" + i + "]: " + view.Get(i))
 	Next

@@ -1,5 +1,7 @@
 Namespace regal.memory.pointers
 
+Using regal.memory.sizeof
+
 ' Structures:
 Struct BufferPointer
 	Public
@@ -33,14 +35,25 @@ Struct BufferPointer
 			Return New BufferPointer(buffer.data, buffer.length, False)
 		End
 		
+		' NOTE: This performs an unsafe allocation.
+		' Please see the manual allocation constructor for details.
+		Function Allocate<T>:BufferPointer(element_count:Int)
+			Return New BufferPointer((element_count * SizeOf<T>()))
+		End
+		
 		' Constructor(s):
 		
-		' NOTE: This is an unsafe memory allocation routine.
-		' This will manually allocate a buffer of 'count' size
-		' in bytes on the heap, then return a 'BufferPointer'
-		' with ownership rights to said memory.
-		' In order to deallocate this memory, use 'Discard'.
-		' Usage of this overload is not recommended.
+		#Rem
+			NOTE: This is an unsafe memory allocation routine.
+			
+			This will manually allocate a buffer of 'count' size
+			in bytes on the heap, then return a 'BufferPointer'
+			with ownership rights to said memory.
+			
+			In order to deallocate this memory, use 'Discard'.
+			Usage of this overload is not recommended.
+		#End
+		
 		Method New(count:Int) ' UInt
 			Self.New(libc.malloc(count), count, True)
 		End
@@ -50,7 +63,7 @@ Struct BufferPointer
 		End
 		
 		Method New(buffer:DataBuffer, length:Int, offset:Int=0)
-			Self.New((buffer.Data + offset), length, False)
+			Self.New((buffer.Data + offset), (length - offset), False)
 		End
 		
 		Method New(data:DataBuffer)
