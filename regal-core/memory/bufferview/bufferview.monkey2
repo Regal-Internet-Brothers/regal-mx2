@@ -534,7 +534,7 @@ Class MathArrayView<ValueType> Extends ArrayView<ValueType> ' Abstract
 		Super.New(ElementCount)
 	End
 	
-	Method New(Data:BufferPointer, OffsetInBytes:UInt=0)
+	Method New(Data:BufferPointer, OffsetInBytes:UInt)
 		Super.New(Data, OffsetInBytes)
 	End
 	
