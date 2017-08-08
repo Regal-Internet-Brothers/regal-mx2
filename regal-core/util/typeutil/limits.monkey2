@@ -1,6 +1,6 @@
 Namespace regal.util.typeutil
 
-Using regal.math
+Using regal.math.limits
 
 ' Functions:
 Function GetLimits<T>:NumericLimits<T>()

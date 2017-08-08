@@ -1,4 +1,4 @@
-Namespace regal.math
+Namespace regal.math.limits
 
 ' Constant variable(s):
 
