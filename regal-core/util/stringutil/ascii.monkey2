@@ -1,4 +1,4 @@
-Namespace regal.util.stringutil
+Namespace regal.util.stringutil.ascii
 
 ' Constant variable(s):
 

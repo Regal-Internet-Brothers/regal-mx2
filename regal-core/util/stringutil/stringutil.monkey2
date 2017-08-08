@@ -6,6 +6,7 @@ Namespace regal.util.stringutil
 #Import "observe"
 #Import "binary"
 
+Using regal.util.stringutil.ascii
 Using regal.memory.byteorder
 
 ' Functions:
