@@ -12,11 +12,11 @@ Function Main:Void()
 	Local data_pointer:= New ContainerPointer<IntStack, Int>(data)
 	
 	For Local i:= 0 Until data_count
-		data.Push((i + 1))
+		data.Push((i * i))
 	Next
 	
 	For Local i:= 0 Until data_count
-		Print(Int(data_pointer))
+		Print(data_pointer.Get())
 		
 		data_pointer += 1
 	Next

@@ -96,16 +96,44 @@ Struct ContainerPointer<ContainerType, ValueType>
 			Set(offset, value)
 		End
 		
-		Operator+:ContainerPointer<ContainerType, ValueType>(pointer_diff:Int)
+		Operator+:ContainerPointer(pointer_diff:Int)
 			DebugAssert(IsValid, "Attempted to add with an invalid array-pointer")
 			
 			Return New ContainerPointer<ContainerType, ValueType>(Data, (index + pointer_diff), Length, Dynamic)
 		End
 		
-		Operator-:ContainerPointer<ContainerType, ValueType>(pointer_diff:Int)
+		Operator-:ContainerPointer(pointer_diff:Int)
 			DebugAssert(IsValid, "Attempted to subtract with an invalid array-pointer")
 			
-			Return New ContainerPointer<ContainerType, ValueType>(Data, (index - pointer_diff), Length, Dynamic)
+			Return New ContainerPointer(Data, (index - pointer_diff), Length, Dynamic)
+		End
+		
+		Operator<:Bool(pointer:ContainerPointer)
+			If (Self.Data <> pointer.Data) Then
+				Return False
+			Endif
+			
+			Return (Self < pointer.Index)
+		End
+		
+		Operator>:Bool(pointer:ContainerPointer)
+			If (Self.Data <> pointer.Data) Then
+				Return False
+			Endif
+			
+			Return (Self > pointer.Index)
+		End
+		
+		Operator=:Bool(index:Int)
+			Return (Self.Index = index)
+		End
+		
+		Operator<:Bool(index:Int)
+			Return (Self.Index < index)
+		End
+		
+		Operator >:Bool(index:Int)
+			Return (Self.Index > index)
 		End
 		
 		' Properties:

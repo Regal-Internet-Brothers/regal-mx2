@@ -4,6 +4,7 @@ Namespace regal.math
 #Import "trig"
 #Import "deltatime"
 #Import "color"
+#Import "limits"
 
 ' Functions:
 Function Sq<T>:T(value:T)
