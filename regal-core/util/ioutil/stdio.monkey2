@@ -90,8 +90,6 @@ Class StandardIOStream Extends Stream
 		End
 		
 		' Constructor(s):
-		
-		' NOTE: This implementation by-definition disables manual initialization.
 		Method New(errorInfo:Bool= False)
 			If (Not errorInfo) Then
 				If (Not _Open()) Then
@@ -119,6 +117,18 @@ Class StandardIOStream Extends Stream
 			
 			If (mode = "a") Then
 				Seek(Length)
+			Endif
+		End
+		
+		Method New(input:SystemFile, output:SystemFile, owns_input:Bool, owns_output:Bool)
+			Self.input = input
+			Self.output = output
+			
+			Self.owns_input = owns_input
+			Self.owns_output = owns_output
+			
+			If (Not HasFileOpen) Then
+				Throw New InvalidOpenOperation(Self)
 			Endif
 		End
 		
@@ -154,6 +164,9 @@ Class StandardIOStream Extends Stream
 				
 				Self.output = libc.stdout
 			Endif
+			
+			Self.owns_input = True
+			Self.owns_output = True
 			
 			Return True
 		End
@@ -228,6 +241,9 @@ Class StandardIOStream Extends Stream
 				Endif
 			Endif
 			
+			Self.owns_input = True
+			Self.owns_output = True
+			
 			Return True
 		End
 		
@@ -248,12 +264,16 @@ Class StandardIOStream Extends Stream
 				Return
 			Endif
 			
-			If (Self.input <> libc.stdin) Then
-				CloseFile(Self.input)
+			If (Self.owns_input) Then
+				If (Self.input <> libc.stdin) Then
+					CloseFile(Self.input)
+				Endif
 			Endif
 			
-			If ((Self.output <> Self.input) And (Self.output <> libc.stdout And Self.output <> libc.stderr)) Then
-				CloseFile(output)
+			If (Self.owns_output) Then
+				If ((Self.output <> Self.input) And (Self.output <> libc.stdout And Self.output <> libc.stderr)) Then
+					CloseFile(output)
+				Endif
 			Endif
 			
 			Self.input = Null
@@ -261,6 +281,9 @@ Class StandardIOStream Extends Stream
 			
 			Self._position = 0
 			Self._length = 0
+			
+			Self.owns_input = False
+			Self.owns_output = False
 		End
 		
 		' Methods:
@@ -271,7 +294,9 @@ Class StandardIOStream Extends Stream
 		
 		Method Clear:Void()
 			If (CONFIG.CLEAR_IMPLEMENTED) Then
-				libc.system("cls")
+				If (Self.output = libc.stdout) Then
+					libc.system("cls")
+				Endif
 			Endif
 		End
 		
@@ -344,8 +369,16 @@ Class StandardIOStream Extends Stream
 			Return (Self.output = Null)
 		End
 		
-		Property FileError:Bool()
-			Return (InputError Or OutputError)
+		Property IsDuplex:Bool()
+			Return Not (InputError Or OutputError)
+		End
+		
+		Property OwnsInput:Bool()
+			Return Self.owns_input
+		End
+		
+		Property OwnsOutput:Bool()
+			Return Self.owns_output
 		End
 	Protected
 		' Fields:
@@ -354,4 +387,8 @@ Class StandardIOStream Extends Stream
 		
 		Field _position:Int
 		Field _length:Int
+		
+		' Flags:
+		Field owns_input:Bool
+		Field owns_output:Bool
 End
