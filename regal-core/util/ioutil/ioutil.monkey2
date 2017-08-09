@@ -1,6 +1,9 @@
 Namespace regal.util.ioutil
 
 #Import "chainstream"
+#Import "repeater"
+#Import "publicdatastream"
+#Import "memory"
 
 Using std.stream
 Using regal.memory.sizeof

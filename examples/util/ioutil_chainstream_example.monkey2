@@ -3,6 +3,7 @@
 Using regal.util.ioutil..
 Using std..
 
+' Functions:
 Function Main:Void()
 	Local a:= WriteThenOpen("a.txt", "A")
 	Local b:= WriteThenOpen("b.txt", "B")
