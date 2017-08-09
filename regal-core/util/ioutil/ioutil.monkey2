@@ -3,6 +3,9 @@ Namespace regal.util.ioutil
 #Import "chainstream"
 #Import "repeater"
 #Import "publicdatastream"
+#Import "stdio"
+
+#Import "errors"
 #Import "memory"
 
 Using std.stream
