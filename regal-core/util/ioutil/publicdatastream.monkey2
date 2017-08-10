@@ -263,7 +263,7 @@ Class PublicDataStream Extends Stream
 			Endif
 		Endif
 		
-		Data = ResizeBuffer(Data, NewSize, True, True, True)
+		Data = memory.ResizeBuffer(Data, NewSize, True, True, True)
 		
 		If (Data <> Null) Then
 			RawSize = NewSize ' Data.Length
