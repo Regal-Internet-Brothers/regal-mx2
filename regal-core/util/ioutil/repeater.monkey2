@@ -1,6 +1,5 @@
 Namespace regal.util.ioutil
 
-' Imports (Public):
 Using std.stream
 Using std.memory
 

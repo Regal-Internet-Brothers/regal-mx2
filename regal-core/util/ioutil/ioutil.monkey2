@@ -2,6 +2,7 @@ Namespace regal.util.ioutil
 
 #Import "publicdatastream"
 #Import "wrapperstream"
+#Import "stringstream"
 #Import "chainstream"
 #Import "repeater"
 #Import "stdio"
