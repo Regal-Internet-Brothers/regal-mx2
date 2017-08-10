@@ -5,7 +5,16 @@ Using std.stream
 
 ' Classes:
 Class WrapperStream<StreamType> Extends Stream
-	' Constructor(s):
+	' Constructor(s) (Protected):
+	Protected
+	
+	Method New()
+		' Nothing so far.
+	End
+	
+	Public
+	
+	' Constructor(s) (Public):
 	Method New(S:StreamType, ThrowOnInvalid:Bool=True)
 		If (ThrowOnInvalid) Then
 			If (S = Null) Then
@@ -20,20 +29,26 @@ Class WrapperStream<StreamType> Extends Stream
 	Method OnClose:Void() Override
 		InternalStream.Close()
 		
+		Super.OnClose()
+		
 		Return
 	End
 
 	' Methods (Public):
-	Method Read:Int(Buffer:DataBuffer, Offset:Int, Count:Int) Override
-		Return InternalStream.Read(Buffer, Offset, Count)
+	Method Read:Int(Buffer:Void Ptr, Count:Int) Override
+		Return InternalStream.Read(Buffer, Count)
 	End
 	
-	Method Write:Int(Buffer:DataBuffer, Offset:Int, Count:Int) Override
-		Return InternalStream.Write(Buffer, Offset, Count)
+	Method Write:Int(Buffer:Void Ptr, Count:Int) Override
+		Return InternalStream.Write(Buffer, Count)
+	End
+	
+	Method Seek:Void(Input:Int) Override
+		InternalStream.Seek(Input)
 	End
 	
 	' Properties:
-	Property Eof:Int() Override
+	Property Eof:Bool() Override ' Int
 		Return InternalStream.Eof
 	End
 	
@@ -42,17 +57,11 @@ Class WrapperStream<StreamType> Extends Stream
 	End
 	
 	Property Position:Int() Override
-		Return InternalStream.Position() ' Position
+		Return InternalStream.Position
 	End
 	
 	Property Stream:StreamType()
 		Return Self.InternalStream
-	End
-	
-	Property ByteOrder:ByteOrder()
-		Return InternalStream.ByteOrder
-	Setter(Order:ByteOrder)
-		InternalStream.ByteOrder = Order
 	End
 	
 	' Fields (Protected):
@@ -73,7 +82,7 @@ Class InvalidWrapperStream Extends StreamError
 	End
 	
 	' Operators:
-	Operator To:String()
+	Operator To:String() Override
 		Return "An invalid stream was given to a 'WrapperStream' object."
 	End
 	

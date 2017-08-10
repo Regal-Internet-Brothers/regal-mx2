@@ -7,22 +7,10 @@ Using std.stream
 Using std.memory
 Using std.collections
 
-' Classes:
-Class ChainStream Extends SpecializedChainStream<Stream> Final
-	' Constructor(s):
-	Method New(BigEndian:Bool=Default_BigEndian, CloseRights:Bool=True, Link:Int=0)
-		Super.New(BigEndian, CloseRights, Link)
-	End
-	
-	Method New(Streams:Stream[], BigEndian:Bool=Default_BigEndian, CloseRights:Bool=True, Link:Int=0)
-		Super.New(Streams, BigEndian, CloseRights, Link)
-	End
-	
-	Method New(Streams:Stack<Stream>, BigEndian:Bool=Default_BigEndian, CloseRights:Bool=True, Link:Int=0)
-		Super.New(Streams, BigEndian, CloseRights, Link)
-	End
-End
+' Aliases:
+Alias ChainStream:SpecializedChainStream<Stream>
 
+' Classes:
 Class SpecializedChainStream<StreamType> Extends Stream
 	' Constant variable(s):
 	
