@@ -1,7 +1,7 @@
 '#Import "../../util/util"
 '#Import "../../memory/memory"
 
-#Import "../../regal"
+#Import "../regal"
 
 ' Imports:
 Using regal.util.stringutil
@@ -172,11 +172,12 @@ Function StreamUtilTests:Void()
 	Local mask_test:= Lambda()
 		Local a_mask:= 22345
 		
-		Local aStream:= New DataStream(a, 0, 3)
+		Local aStream:= New DataStream(a, 0, 4)
+		a.ByteOrder = ByteOrder.BigEndian ' LittleEndian
 		
 		MaskStream(aStream, a_mask, a.Length)
 		
-		Local masked_a:= (a_value ~ a_mask)
+		Local masked_a:= (a_mask ~ a_value)
 		
 		Local new_masked_a:= a.PeekInt(0)
 		

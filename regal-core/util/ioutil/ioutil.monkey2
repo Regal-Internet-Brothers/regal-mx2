@@ -14,11 +14,11 @@ Using std.stream
 Using regal.memory.sizeof
 
 ' This applies 'Mask' to the contents of 'S' (XOR; useful for networking routines)
-Function MaskStream:Void(S:Stream, Mask:UInt, Length:Int)
-	Local DataPosition:= S.Position
-	Local DataEnd:= (DataPosition + Length) ' S.Length
+Function MaskStream:Void(S:Stream, Mask:UInt, Length:Int, SeekBack:Bool=True)
+	Local DataOrigin:= S.Position
+	Local DataEnd:= (DataOrigin + Length) ' S.Length
 	
-	DebugStop()
+	Local DataPosition:= DataOrigin
 	
 	While (DataPosition < DataEnd)
 		Local DataRemaining:= (DataEnd - DataPosition)
@@ -28,7 +28,7 @@ Function MaskStream:Void(S:Stream, Mask:UInt, Length:Int)
 			
 			S.Seek(DataPosition)
 			
-			S.WriteInt(Data ~ Mask)
+			S.WriteInt((Data ~ Mask))
 			
 			DataPosition += SizeOf(Data)
 		Elseif (DataRemaining >= 2) Then
@@ -50,7 +50,9 @@ Function MaskStream:Void(S:Stream, Mask:UInt, Length:Int)
 		Endif
 	Wend
 	
-	S.Seek(DataPosition)
+	If (SeekBack) Then
+		S.Seek(DataOrigin)
+	Endif
 	
 	Return
 End
