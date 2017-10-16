@@ -17,6 +17,7 @@ Extern
 Const _O_BINARY:Int
 
 ' Functions:
+Function __freopen:SystemFile(filename:libc.const_char_t Ptr, mode:CString, stream:SystemFile)="freopen"
 Function freopen:SystemFile(filename:CString, mode:CString, stream:SystemFile)
 
 Function _fileno:Int(stream:SystemFile)
@@ -140,7 +141,7 @@ Class StandardIOStream Extends Stream
 			If (input = Null) Then
 				If (Not CONFIG.BINARY_HACK) Then
 					If (Not CONFIG.WINNT_STD_REOPENHACK) Then
-						freopen(0, "rb", libc.stdin)
+						__freopen(Null, "rb", libc.stdin) ' 0
 					Else
 						freopen("CONIN$", "rb", libc.stdin)
 					Endif
@@ -154,7 +155,7 @@ Class StandardIOStream Extends Stream
 			If (output = Null) Then
 				If (Not CONFIG.BINARY_HACK) Then
 					If (Not CONFIG.WINNT_STD_REOPENHACK) Then
-						freopen(0, "wb", libc.stdout)
+						__freopen(Null, "wb", libc.stdout)
 					Else
 						freopen("CONOUT$", "wb", libc.stdout)
 					Endif

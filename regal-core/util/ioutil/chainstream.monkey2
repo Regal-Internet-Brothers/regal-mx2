@@ -109,7 +109,7 @@ Class SpecializedChainStream<StreamType> Extends Stream
 		If (Not OnFinalLink And BytesRead < Count) Then
 			Link += 1
 			
-			Return (BytesRead + Read((Buffer+BytesRead), (Count-BytesRead)))
+			Return (BytesRead + Read((Cast<Byte Ptr>(Buffer) + BytesRead), (Count - BytesRead)))
 		Endif
 		
 		Return BytesRead
@@ -121,7 +121,7 @@ Class SpecializedChainStream<StreamType> Extends Stream
 		If (Not OnFinalLink And BytesWritten < Count) Then
 			Link += 1
 			
-			Return (BytesWritten + Write((Buffer+BytesWritten), (Count-BytesWritten)))
+			Return (BytesWritten + Write((Cast<Byte Ptr>(Buffer) + BytesWritten), (Count - BytesWritten)))
 		Endif
 		
 		Return BytesWritten
