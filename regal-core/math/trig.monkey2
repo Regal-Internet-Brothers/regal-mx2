@@ -1,13 +1,13 @@
 Namespace regal.math.trig
 
 Function RadiansToDegrees:Double(x:Double)
-	Const RADIAN_SCALAR:= (monkey.math.Pi / 180.0) ' 57.29577951308232
+	Const RADIAN_SCALAR:= (180.0 / Pi) ' 0.017453292519943295
 	
 	Return (x * RADIAN_SCALAR)
 End
  
 Function DegreesToRadians:Double(x:Double)
-	Const DEGREE_SCALAR:= (180.0 / Pi) ' 0.017453292519943295
+	Const DEGREE_SCALAR:= (monkey.math.Pi / 180.0) ' 57.29577951308232
 	
 	Return (x * DEGREE_SCALAR)
 End
